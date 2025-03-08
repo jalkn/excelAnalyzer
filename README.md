@@ -42,13 +42,7 @@ The script creates the following directory structure:
 
 ## Setup
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/your-username/excel-analyzer.git
-   cd excel-analyzer
-   ```
-
-2. **Place Your Excel File**:
+1. **Place Your Excel File**:
    - Place your Excel file (e.g., `reporte.xlsx`) in the `src/` folder.
 
 3. **Run the Script**:
