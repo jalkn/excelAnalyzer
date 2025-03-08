@@ -5,7 +5,7 @@ param (
 
 # Check if the file path is provided
 if (-not $filePath) {
-    Write-Host "Usage: .\excelAnalizer.ps1 <path_to_excel_file>"
+    Write-Host "Usage: .\excelAnalizer.ps1 <input/reporte.xlsx>"
     exit
 }
 
