@@ -1,83 +1,141 @@
-# excelAnalizer.ps1
-param (
-    [string]$filePath
-)
+# Define colors for output
+$GREEN = "Green"
+$YELLOW = "Yellow"
+$NC = "White"
 
-# Check if the file path is provided
-if (-not $filePath) {
-    Write-Host "Usage: .\excelAnalizer.ps1 <input/reporte.xlsx>"
-    exit
-}
-
-# Check if Python is installed
-$pythonPath = (Get-Command python -ErrorAction SilentlyContinue).Source
-if (-not $pythonPath) {
-    Write-Host "Python is not installed or not in the PATH. Please install Python and try again."
-    exit
-}
-
-# Check if the Excel file exists
-if (-not (Test-Path $filePath)) {
-    Write-Host "The file '$filePath' does not exist."
-    exit
-}
-
-# Define the Python script as a here-string
-$pythonScript = @"
+function excelAnalyzer {
+    Write-Host "🏗️ Creating Excel Analyzer Script" -ForegroundColor $YELLOW
+    # Create the Python script dynamically
+    Set-Content -Path "analyzers/excelAnalyzer.py" -Value @"
 import pandas as pd
+import os
 
-def summarize_excel(file_path):
+def summarize_excel(file_path, report_folder):
     # Read the Excel file
     df = pd.read_excel(file_path)
 
-    # Display the first few rows of the dataframe
-    print("First few rows of the data:")
-    print(df.head())
+    # Create a dictionary to store all summary results
+    summary_results = {}
+
+    # First few rows of the data
+    summary_results["First Few Rows"] = df.head()
 
     # Basic summary of the data
-    print("\nSummary of the data:")
-    print(df.info())
+    summary_results["Data Info"] = df.info()
 
     # Descriptive statistics for numerical columns
-    print("\nDescriptive statistics for numerical columns:")
-    print(df.describe())
+    summary_results["Descriptive Statistics"] = df.describe()
 
     # Count of unique values in each column
-    print("\nCount of unique values in each column:")
-    print(df.nunique())
+    summary_results["Unique Values Count"] = df.nunique()
 
     # Sum of null values in each column
-    print("\nSum of null values in each column:")
-    print(df.isnull().sum())
+    summary_results["Null Values Count"] = df.isnull().sum()
 
     # Additional summaries (e.g., mean, median, mode) for specific columns
     if len(df.select_dtypes(include=['number']).columns) > 0:
-        print("\nMean of numerical columns:")
-        print(df.mean(numeric_only=True))
-
-        print("\nMedian of numerical columns:")
-        print(df.median(numeric_only=True))
+        summary_results["Mean of Numerical Columns"] = df.mean(numeric_only=True)
+        summary_results["Median of Numerical Columns"] = df.median(numeric_only=True)
 
     if len(df.select_dtypes(include=['object']).columns) > 0:
-        print("\nMode of categorical columns:")
-        print(df.mode().iloc[0])
+        summary_results["Mode of Categorical Columns"] = df.mode().iloc[0]
+
+    # Save the results to an Excel file
+    report_file = os.path.join(report_folder, "report.xlsx")
+    with pd.ExcelWriter(report_file, engine='openpyxl') as writer:
+        for sheet_name, data in summary_results.items():
+            if isinstance(data, pd.DataFrame):
+                data.to_excel(writer, sheet_name=sheet_name, index=False)
+            else:
+                pd.DataFrame([data]).to_excel(writer, sheet_name=sheet_name, index=False)
+
+    print(f"✅ Analysis report saved to: {report_file}")
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) != 2:
-        print("Usage: python excel_analyzer.py <path_to_excel_file>")
+    if len(sys.argv) != 3:
+        print("Usage: python excel_analyzer.py <src/reporte.xlsx> <reports>")
     else:
         file_path = sys.argv[1]
-        summarize_excel(file_path)
+        report_folder = sys.argv[2]
+        summarize_excel(file_path, report_folder)
 "@
+}
 
-# Save the Python script to a temporary file
-$tempPythonFile = "$env:TEMP\temp_excel_analyzer.py"
-$pythonScript | Out-File -FilePath $tempPythonFile -Encoding utf8
+function createStructure {
+    Write-Host "🏗️ Creating Directory Structure" -ForegroundColor $YELLOW
 
-# Run the Python script with the provided Excel file path
-Write-Host "Analyzing Excel file: $filePath"
-python $tempPythonFile $filePath
+    # Create Python virtual environment
+    if (-not (Test-Path ".venv")) {
+        Write-Host "Creating Python virtual environment..." -ForegroundColor $GREEN
+        python -m venv .venv
+    }
 
-# Clean up the temporary Python file
-Remove-Item -Path $tempPythonFile -Force
+    # Activate the virtual environment
+    Write-Host "Activating virtual environment..." -ForegroundColor $GREEN
+    .\.venv\Scripts\Activate.ps1
+
+    # Upgrade pip and install required packages
+    Write-Host "Installing required Python packages..." -ForegroundColor $GREEN
+    python -m pip install --upgrade pip
+    python -m pip install pandas openpyxl
+
+    # Create subdirectories
+    Write-Host "Creating directory structure..." -ForegroundColor $GREEN
+    $directories = @(
+        "src",
+        "analyzers",
+        "reports"
+    )
+    foreach ($dir in $directories) {
+        if (-not (Test-Path $dir)) {
+            New-Item -Path $dir -ItemType Directory -Force
+        }
+    }
+
+    # Create empty Python files
+    $files = @(
+        "analyzers/excelAnalyzer.py"
+    )
+    foreach ($file in $files) {
+        if (-not (Test-Path $file)) {
+            New-Item -Path $file -ItemType File -Force
+        }
+    }
+}
+
+function generateAnalysis {
+    Write-Host "🏗️ Generating Analysis" -ForegroundColor $YELLOW
+
+    # Check if the src file exists
+    $srcFile = "src/reporte.xlsx"
+    if (-not (Test-Path $srcFile)) {
+        Write-Host "❌ Source file '$srcFile' not found. Please place your Excel file in the 'src' folder." -ForegroundColor "Red"
+        exit
+    }
+
+    # Run the Python script to analyze the Excel file
+    Write-Host "Running Excel Analyzer..." -ForegroundColor $GREEN
+    python analyzers/excelAnalyzer.py $srcFile "reports"
+
+    Write-Host "✅ Analysis completed. Check the 'reports' folder for results." -ForegroundColor $GREEN
+}
+
+function analysis {
+    Write-Host "🏗️ Starting Analysis Process" -ForegroundColor $YELLOW
+
+    # Call functions to create structure and generate tables
+    createStructure
+    excelAnalyzer
+
+    # Activate virtual environment
+    .\.venv\Scripts\Activate.ps1
+
+    # Generate analysis
+    generateAnalysis
+
+    Write-Host "🏗️ Analysis process completed successfully." -ForegroundColor $YELLOW
+}
+
+# Call the main function
+analysis
