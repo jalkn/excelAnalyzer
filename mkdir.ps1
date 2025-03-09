@@ -1,7 +1,6 @@
 # Define colors for output
 $GREEN = "Green"
 $YELLOW = "Yellow"
-$NC = "White"
 
 # Define the root directory (current directory)
 $rootDir = "."

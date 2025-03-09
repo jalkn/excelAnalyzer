@@ -1,7 +1,6 @@
 # Define colors for output
 $GREEN = "Green"
 $YELLOW = "Yellow"
-$NC = "White"
 
 function excelAnalyzer {
     Write-Host "🏗️ Creating Excel Analyzer Script" -ForegroundColor $YELLOW
