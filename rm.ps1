@@ -1,3 +1,7 @@
+# Define colors for output
+$GREEN = "Green"
+$RED = "Red"
+
 # Define the root directory (current directory)
 $rootDir = "."
 
@@ -22,14 +26,14 @@ foreach ($dir in $directories) {
                 try {
                     # Use Remove-Item with -Recurse for subdirectories and -Force to suppress confirmations
                     Remove-Item -Path $item.FullName -Recurse -Force
-                    Write-Host "Deleted item: $($item.FullName)"
+                    Write-Host "Deleted item: $($item.FullName)" -ForegroundColor $RED
                 }
                 catch {
-                    Write-Host "Error deleting item $($item.FullName): $($_.Exception.Message)"
+                    Write-Host "Error deleting item $($item.FullName): $($_.Exception.Message)" -ForegroundColor $RED
                 }
             }
 
-            Write-Host "Deleted all items in: $fullPath"
+            Write-Host "Deleted all items in: $fullPath" -ForegroundColor $GREEN
         }
         catch {
             # Corrected the exception handling here:
@@ -37,8 +41,8 @@ foreach ($dir in $directories) {
         }
     }
     else {
-        Write-Host "Directory does not exist: $fullPath"
+        Write-Host "Directory does not exist: $fullPath" -ForegroundColor $RED
     }
 }
 
-Write-Host "File and directory deletion complete."
+Write-Host "File and directory deletion complete." -ForegroundColor $GREEN
