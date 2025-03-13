@@ -21,7 +21,7 @@ function createStructure {
     # Upgrade pip and install required packages
     Write-Host "Installing required Python packages..." -ForegroundColor $GREEN
     python -m pip install --upgrade pip
-    python -m pip install pandas openpyxl
+    python -m pip install pandas openpyxl msoffcrypto-tool
 
     # Create subdirectories
     Write-Host "Creating directory structure..." -ForegroundColor $GREEN
