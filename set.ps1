@@ -54,7 +54,8 @@ function createStructure {
     # Create empty Python files
     $files = @(
         "analyzers/excelAnalyzer.py",
-        "analyzers/passKey.py"
+        "analyzers/passKey.py",
+        "analyzers/checkCols.py"
     )
     foreach ($file in $files) {
         if (-not (Test-Path $file)) {
@@ -163,6 +164,18 @@ if __name__ == "__main__":
     else:
         print("Process failed.")
 "@
+
+    Write-Host "PassKey script created successfully." -ForegroundColor $GREEN
+
+    # Create the checkCols.py script
+    Set-Content -Path "analyzers/checkCols.py" -Value @"
+import pandas as pd
+
+df = pd.read_excel('src/name.xlsx')
+print(df.columns)
+"@
+
+    Write-Host "CheckCols script created successfully." -ForegroundColor $GREEN
 }
 
 function setProject{
