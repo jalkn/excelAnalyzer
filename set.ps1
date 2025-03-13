@@ -53,7 +53,8 @@ function createStructure {
 
     # Create empty Python files
     $files = @(
-        "analyzers/excelAnalyzer.py"
+        "analyzers/excelAnalyzer.py",
+        "analyzers/passKey.py"
     )
     foreach ($file in $files) {
         if (-not (Test-Path $file)) {
@@ -117,6 +118,50 @@ if __name__ == "__main__":
         file_path = sys.argv[1]
         report_folder = sys.argv[2]
         summarize_excel(file_path, report_folder)
+"@
+
+    Write-Host "Excel Analyzer script created successfully." -ForegroundColor $GREEN
+
+    # Create the passKey.py script
+    Set-Content -Path "analyzers/passKey.py" -Value @"
+import msoffcrypto
+
+def remove_excel_password(input_file, output_file=None):
+    
+    if output_file is None:
+        output_file = input_file  # Overwrite the input file if no output file is specified
+
+    # Prompt for the password
+    password = input(f"Enter password for '{input_file}': ")
+
+    try:
+        # Decrypt the file using msoffcrypto-tool
+        decrypted_file = output_file
+        with open(input_file, "rb") as file:
+            office_file = msoffcrypto.OfficeFile(file)
+            office_file.load_key(password=password)  # Load the password
+            with open(decrypted_file, "wb") as decrypted:
+                office_file.decrypt(decrypted)  # Decrypt and save the file
+
+        print(f"Password removed successfully. File saved to '{output_file}'.")
+        return True
+    except msoffcrypto.exceptions.InvalidKeyError:
+        print("Incorrect password. Please try again.")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return False
+
+
+if __name__ == "__main__":
+    # Example usage
+    input_excel_file = "src/name.xlsx"
+    output_excel_file = "src/name.xlsx"
+
+    if remove_excel_password(input_excel_file, output_excel_file):
+        print("Process completed successfully.")
+    else:
+        print("Process failed.")
 "@
 }
 
