@@ -114,7 +114,7 @@ def summarize_excel(file_path, report_folder):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) != 3:
-        print("Usage: python excel_analyzer.py <src/reporte.xlsx> <reports>")
+        print("Usage: python excel_analyzer.py <src/dataHistoricaPBI.xlsx> <reports>")
     else:
         file_path = sys.argv[1]
         report_folder = sys.argv[2]

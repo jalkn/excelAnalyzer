@@ -6,7 +6,7 @@ function generateAnalysis {
     Write-Host "🏗️ Generating Analysis" -ForegroundColor $YELLOW
 
     # Check if the src file exists
-    $srcFile = "src/reporte.xlsx"
+    $srcFile = "src/dataHistoricaPBI.xlsx"
     if (-not (Test-Path $srcFile)) {
         Write-Host "❌ Source file '$srcFile' not found. Please place your Excel file in the 'src' folder." -ForegroundColor "Red"
         exit
